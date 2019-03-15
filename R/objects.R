@@ -63,8 +63,31 @@ LoomGlobalAttribute <- setClass(
   contains = 'character'
 )
 
+GlobalAttribute <- setClass(
+  Class = 'GlobalAttribute',
+  slots = c(
+    key = 'character',
+    flush = 'logical'
+  ),
+  prototype = prototype(
+    flush = FALSE
+  )
+)
+
 LoomRowAttribute <- setClass(
   Class = 'LoomRowAttribute',
+  slots = c(
+    axis = 'numeric',
+    key = 'character'
+  ),
+  prototype = prototype(
+    axis = ROW_AXIS
+  ),
+  contains = 'matrix'
+)
+
+RowAttribute <- setClass(
+  Class = 'RowAttribute',
   slots = c(
     axis = 'numeric',
     key = 'character',
@@ -74,7 +97,7 @@ LoomRowAttribute <- setClass(
     axis = ROW_AXIS,
     flush = FALSE
   ),
-  contains = 'matrix'
+  contains = 'data.frame'
 )
 
 LoomColumnAnnotation <- setClass(
@@ -82,13 +105,35 @@ LoomColumnAnnotation <- setClass(
   contains = 'LoomColumnAttribute'
 )
 
+ColumnAnnotation <- setClass(
+  Class = 'ColumnAnnotation',
+  contains = 'ColumnAttribute'
+)
+
 LoomColumnMetric <- setClass(
   Class = 'LoomColumnMetric',
   contains = 'LoomColumnAttribute'
 )
 
+ColumnMetric <- setClass(
+  Class = 'ColumnMetric',
+  contains = 'ColumnAttribute'
+)
+
 LoomColumnAttribute <- setClass(
   Class = 'LoomColumnAttribute',
+  slots = c(
+    axis = 'numeric',
+    key = 'character'
+  ),
+  prototype = prototype(
+    axis = COLUMN_AXIS
+  ),
+  contains = 'matrix'
+)
+
+ColumnAttribute <- setClass(
+  Class = 'ColumnAttribute',
   slots = c(
     axis = 'numeric',
     key = 'character',
@@ -98,13 +143,13 @@ LoomColumnAttribute <- setClass(
     axis = COLUMN_AXIS,
     flush = FALSE
   ),
-  contains = 'matrix'
+  contains = 'data.frame'
 )
 
 ### MetaData
 
-GAMetaData <- setClass(
-  Class = "GAMetaData",
+LoomMetaData <- setClass(
+  Class = "LoomMetaData",
   prototype = prototype(
     key = "MetaData"
   ),
@@ -126,13 +171,14 @@ MetaData <- setClass(
     embeddings = list(),
     clusterings = list(),
     regulonThresholds = list()
-  )
+  ),
+  contains = 'GlobalAttribute'
 )
 
 ### Tree
 
-SCopeTreeLevel <- setClass(
-  Class = "SCopeTreeLevel",
+LoomSCopeTreeLevel <- setClass(
+  Class = "LoomSCopeTreeLevel",
   slots = c(
     key = 'character'
   ),
@@ -142,32 +188,33 @@ SCopeTreeLevel <- setClass(
 SCopeTree <- setClass(
   Class = "SCopeTree",
   slots = c(
-    L1 = 'SCopeTreeLevel',
-    L2 = 'SCopeTreeLevel',
-    L3 = 'SCopeTreeLevel'
-  )
+    L1 = 'LoomSCopeTreeLevel',
+    L2 = 'LoomSCopeTreeLevel',
+    L3 = 'LoomSCopeTreeLevel'
+  ),
+  contains = 'GlobalAttribute'
 )
 
 ### Embeddings
 
-CADefaultEmbedding <- setClass(
-  Class = 'CADefaultEmbedding',
+LoomDefaultEmbedding <- setClass(
+  Class = 'LoomDefaultEmbedding',
   prototype = prototype(
     key = 'Embedding'
   ),
   contains = 'LoomColumnAttribute'
 )
 
-CAEmbeddingsX <- setClass(
-  Class = 'CAEmbeddingsX',
+LoomEmbeddingsX <- setClass(
+  Class = 'LoomEmbeddingsX',
   prototype = prototype(
     key = 'Embeddings_X'
   ),
   contains = 'LoomColumnAttribute'
 )
 
-CAEmbeddingsY <- setClass(
-  Class = 'CAEmbeddingsY',
+LoomEmbeddingsY <- setClass(
+  Class = 'LoomEmbeddingsY',
   prototype = prototype(
     key = 'Embeddings_Y'
   ),
@@ -215,5 +262,5 @@ Embedding <- setClass(
   prototype = prototype(
     default = FALSE
   ),
-  contains = 'data.frame'
+  contains = 'ColumnAttribute'
 )

@@ -18,8 +18,8 @@ CreateSCopeLoom <- function(
   # Set the file path
   loom@file.path <- file.path
   
-  cn<-colnames(dgem)
-  rn<-row.names(dgem)
+  cn <- colnames(x = dgem)
+  rn <- row.names(x = dgem)
   
   ##########
   # Matrix #
@@ -30,25 +30,26 @@ CreateSCopeLoom <- function(
     print("Converting to dgCMatrix...")
     dgem <- methods::as(object = dgem, Class = "dgCMatrix")
   }
+  print("Adding main matrix...")
   loom@matrix <- new(Class = "MainMatrix", dgem)
   
   #####################
   # Global Attributes #
   #####################
-  loom <- AddLoomGlobalAttribute(object = loom, name = "title", data = title)
-  loom <- AddLoomGlobalAttribute(object = loom, name = "Genome", data = genome)
-  loom <- AddGlobalAttribute(object = loom, name = "tree", data = tree)
-  loom <- AddLoomGlobalAttribute(object = loom, name = "SCopeLoomR.version", data = as.character(x = packageVersion("SCopeLoomR")))
-  loom <- AddLoomGlobalAttribute(object = loom, name = "R.version", data = as.character(R.version.string))
-  loom <- AddLoomGlobalAttribute(object = loom, name = "CreationDate", data = as.character(Sys.time()))
+  loom <- AddGlobalAttribute(object = loom, name = "Title", data = title)
+  loom <- AddGlobalAttribute(object = loom, name = "Genome", data = genome)
+  loom <- AddGlobalAttribute(object = loom, name = "SCopeTree", data = tree)
+  loom <- AddGlobalAttribute(object = loom, name = "SCopeLoomR.version", data = as.character(x = packageVersion("SCopeLoomR")))
+  loom <- AddGlobalAttribute(object = loom, name = "R.version", data = R.version.string)
+  loom <- AddGlobalAttribute(object = loom, name = "CreationDate", data = as.character(x = Sys.time()))
   loom <- AddGlobalAttribute(object = loom, name = "MetaData", data = new(Class = "MetaData"))
 
   #####################
   # Column Attributes #
   #####################
-  
   ## CellID
-  loom@col.attrs[["CellID"]] <- new(Class = "LoomColumnAttribute", key = "CellID", t(x = as.matrix(x = cn)))
+  print("Adding CellID column attribute...")
+  loom <- AddColumnAttribute(object = loom, name = "CellID", data = cn)
   
   ## Embeddings (Add the default embedding)
   if(!is.null(x = embedding)) {
@@ -67,8 +68,8 @@ CreateSCopeLoom <- function(
   #####################
   
   ## Gene
-  loom@row.attrs[["Gene"]] <- new(Class = "LoomRowAttribute", key = "Gene", as.matrix(x = rn))
-  
+  loom <- AddRowAttribute(object = loom, name = "Gene", data = rn)
+
   # Options
   loom@options[["chunk.size"]] <- chunk.size
   loom@options[["display.progress"]] <- display.progress
@@ -80,32 +81,46 @@ CreateSCopeTree <- function(level.1
                             , level.2
                             , level.3) {
   tree <- new(Class = "SCopeTree"
-              , L1 = new(Class = "SCopeTreeLevel", key = "SCopeTreeL1", level.1)
-              , L2 = new(Class = "SCopeTreeLevel", key = "SCopeTreeL2", level.2)
-              , L3 = new(Class = "SCopeTreeLevel", key = "SCopeTreeL3", level.3))
+              , L1 = new(Class = "LoomSCopeTreeLevel", key = "SCopeTreeL1", level.1)
+              , L2 = new(Class = "LoomSCopeTreeLevel", key = "SCopeTreeL2", level.2)
+              , L3 = new(Class = "LoomSCopeTreeLevel", key = "SCopeTreeL3", level.3))
   return (tree)
 }
 
-AddLoomGlobalAttribute <- function(object
+CreateLoomGlobalAttribute <- function(object
                                , name
                                , data) {
-  object@attrs[[name]] <- new(Class = "LoomGlobalAttribute", key = name, data)
-  return (object)
+  if(is.character(x = data)) {
+    return (new(Class = "LoomGlobalAttribute", key = name, data))
+  } else {
+    return (data)
+  }
 }
 
 AddGlobalAttribute <- function(object
                                , name
                                , data) {
-  object@attrs[[name]] <- data
+  object@attrs[[name]] <- CreateLoomGlobalAttribute(object = object, name = name, data = data)
   return (object)
+}
+
+AddRowAttribute <- function(object, name, data) {
+  object@row.attrs[[name]] <- CreateRowAttribute(name = name, data = data)
+  return (object)
+}
+
+CreateRowAttribute <- function(name, data) {
+  ra <- data.frame(data, stringsAsFactors = F)
+  colnames(x = ra) <- name
+  return (new(Class = "RowAttribute", key = name, ra))
 }
 
 AddAnnotation <- function(object, name, data) {
   # Add column attribute
-  object@col.attrs[[name]] <- new(Class = "LoomColumnAnnotation", key = name, as.character(x = t(x = as.matrix(x = data))))
+  object@col.attrs[[name]] <- new(Class = "ColumnAnnotation", key = name, data)
   # Add associated global attribute
   gmd.annotations <- slot(object = object@attrs$MetaData, "annotations")
-  gmd.annotations[[length(x = gmd.annotations)+1]]<-as.list(as.character(unique(values)))
+  gmd.annotations[[length(x = gmd.annotations)+1]] <- as.list(as.character(x = unique(x = values)))
   slot(object = object@attrs$MetaData, "annotations") <- gmd.annotations
   return (object)
 }
@@ -114,7 +129,8 @@ AddNbGene <- function(object) {
   # Check if matrix is raw counts
   print("Adding default metrics nGene...")
   n.gene <- Matrix::colSums(x = object@matrix > 0)
-  object <- AddMetric(object = object, name = "nGene", data = t(x = n.gene))
+  n.gene <- data.frame("n.Gene" = n.gene)
+  object <- AddMetric(object = object, name = "nGene", data = n.gene)
   return (object)
 }
 
@@ -126,13 +142,15 @@ AddNbUMI <- function(object) {
   } else {
     warning("Default metric nUMI was not added because the input matrix does not seem to be UMI counts.")
   }
-  object <- AddMetric(object = object, name = "nUMI", data = t(x = n.umi))
+  n.umi <- data.frame("n.UMI" = n.umi)
+  object <- AddMetric(object = object, name = "nUMI", data = n.umi)
   return (object)
 }
 
 AddMetric <- function(object, name, data) {
   # Add column attribute
-  object@col.attrs[[name]] <- new(Class = "LoomColumnMetric", key = name, data)
+  ca <- new(Class = "ColumnAttribute", data)
+  object@col.attrs[[name]] <- new(Class = "ColumnMetric", key = name, ca)
   # Add associated global attribute
   gmd.metrics <- slot(object = object@attrs$MetaData, "metrics")
   gmd.metrics[[length(x = gmd.metrics)+1]]<-list(name = name)
@@ -159,6 +177,17 @@ AddEmbedding <- function(object, name, data, is.default = FALSE) {
     , data)
   object@col.attrs[["Embeddings"]] <- embeddings
   return (object)
+}
+
+AddColumnAttribute <- function(object, name, data) {
+  object@col.attrs[[name]] <- CreateColumnAttribute(name = name, data = data)
+  return (object)
+}
+
+CreateColumnAttribute <- function(name, data) {
+  ca <- data.frame(data, stringsAsFactors = F)
+  colnames(x = ca) <- name
+  return (new(Class = "ColumnAttribute", key = name, ca))
 }
 
 
