@@ -152,6 +152,9 @@ setMethod("write", "MainMatrix", function(object, ...) {
   return (object)
 })
 
+#####################
+# Global Attributes
+
 setMethod("write", "SCopeTree", function(object, ...) {
   if(!object@flush) {
     # Level 1
@@ -210,6 +213,16 @@ setMethod("write", "LoomGlobalAttribute", function(object, ...) {
   return (object)
 })
 
+#####################
+# Row Attributes
+
+setMethod("write", "Regulons", function(object, ...) {
+  if(verbose) print("write Regulons")
+  
+  ca.e.x <- new(Class = "LoomEmbeddingsX", t(x = e.x))
+  write(object = ca.e.x, ...)
+})
+
 setMethod("write", "LoomRowAttribute", function(object, ...) {
   args <- list(...)
   loom = args$file
@@ -260,6 +273,9 @@ setMethod("write", "RowAttribute", function(object, ...) {
   }
   return (object)
 })
+
+#####################
+# Column Attributes
 
 setMethod("write", "Embeddings", function(object, ...) {
   if(verbose) print("write Embeddings")

@@ -21,9 +21,7 @@ CreateSCopeLoom <- function(
   cn <- colnames(x = dgem)
   rn <- row.names(x = dgem)
   
-  ##########
-  # Matrix #
-  ##########
+  # Matrix
   # Check the type matrix
   # Convert to dgCMatrix if necessary to speedup populating the matrix slot
   if(class(x = dgem) %in% c("matrix", "dgTMatrix")) {
@@ -33,9 +31,7 @@ CreateSCopeLoom <- function(
   print("Adding main matrix...")
   loom@matrix <- new(Class = "MainMatrix", dgem)
   
-  #####################
-  # Global Attributes #
-  #####################
+  # Global Attributes
   loom <- AddGlobalAttribute(object = loom, name = "Title", data = title)
   loom <- AddGlobalAttribute(object = loom, name = "Genome", data = genome)
   loom <- AddGlobalAttribute(object = loom, name = "SCopeTree", data = tree)
@@ -44,9 +40,7 @@ CreateSCopeLoom <- function(
   loom <- AddGlobalAttribute(object = loom, name = "CreationDate", data = as.character(x = Sys.time()))
   loom <- AddGlobalAttribute(object = loom, name = "MetaData", data = new(Class = "MetaData"))
 
-  #####################
-  # Column Attributes #
-  #####################
+  # Column Attributes
   ## CellID
   print("Adding CellID column attribute...")
   loom <- AddColumnAttribute(object = loom, name = "CellID", data = cn)
@@ -77,6 +71,9 @@ CreateSCopeLoom <- function(
   return (loom)
 }
 
+#####################
+# Global Attributes
+
 CreateSCopeTree <- function(level.1
                             , level.2
                             , level.3) {
@@ -104,6 +101,13 @@ AddGlobalAttribute <- function(object
   return (object)
 }
 
+#####################
+# Row Attributes
+
+AddRegulons <- function(object, regulons) {
+  object@row.attrs[["Regulons"]] <- new(Class = "Regulons", key = "Regulons", regulons)
+}
+
 AddRowAttribute <- function(object, name, data) {
   object@row.attrs[[name]] <- CreateRowAttribute(name = name, data = data)
   return (object)
@@ -113,6 +117,13 @@ CreateRowAttribute <- function(name, data) {
   ra <- data.frame(data, stringsAsFactors = F)
   colnames(x = ra) <- name
   return (new(Class = "RowAttribute", key = name, ra))
+}
+
+#####################
+# Column Attributes
+
+AddRegulonAUCMatrix <- function(object, regulon.auc) {
+  object@col.attrs[["RegulonsAUC"]] <- regulons.auc
 }
 
 AddAnnotation <- function(object, name, data) {

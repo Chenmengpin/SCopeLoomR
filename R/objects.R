@@ -132,11 +132,10 @@ LoomColumnAttribute <- setClass(
   contains = 'matrix'
 )
 
-ColumnAttribute <- setClass(
-  Class = 'ColumnAttribute',
+ColumnAttributeDataFrame <- setClass(
+  Class = 'ColumnAttributeDataFrame',
   slots = c(
     axis = 'numeric',
-    key = 'character',
     flush = 'logical'
   ),
   prototype = prototype(
@@ -144,6 +143,19 @@ ColumnAttribute <- setClass(
     flush = FALSE
   ),
   contains = 'data.frame'
+)
+
+ColumnAttributeList <- setClass(
+  Class = 'ColumnAttributeList',
+  slots = c(
+    axis = 'numeric',
+    flush = 'logical'
+  ),
+  prototype = prototype(
+    axis = COLUMN_AXIS,
+    flush = FALSE
+  ),
+  contains = 'list'
 )
 
 ### MetaData
@@ -262,5 +274,29 @@ Embedding <- setClass(
   prototype = prototype(
     default = FALSE
   ),
-  contains = 'ColumnAttribute'
+  contains = 'ColumnAttributeDataFrame'
+)
+
+### Regulons
+
+#' The LoomRegulons Class (extends list)
+#'
+LoomRegulons <- setClass(
+  Class = 'LoomRegulons',
+  contains = 'LoomRowAttribute'
+)
+
+#' The Regulons Class (extends list)
+#'
+#' The Regulons object is a representatial class for the regulons that will stored as 
+#' row attributes in the loom file through:
+#' - LoomRegulons
+#' 
+#' @name Regulons-class
+#' @rdname Regulons-class
+#' @exportClass Regulons
+#'
+Regulons <- setClass(
+  Class = 'Regulons',
+  contains = 'ColumnAttributeList'
 )
